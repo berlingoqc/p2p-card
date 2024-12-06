@@ -12,15 +12,6 @@ The game logic is a clone of the UNO gameplay using the following technologies.
 * Solano
 
 
-
-
-
-
-
-
-
-
-
 ## Dev entry
 
 

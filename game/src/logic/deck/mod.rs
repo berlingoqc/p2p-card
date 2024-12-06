@@ -1,19 +1,20 @@
-use super::cards::card::Card;
 
+pub struct DeckCardConfiguration {
+
+}
 
 pub struct DeckConfiguration {
-
+    cards: Vec<DeckCardConfiguration>
 }
 
 pub struct Deck {
-    cards: Vec<Box<dyn Card>>
-}
+    cards: Vec<u32>
 
+}
 
 
 impl Deck {
     fn builder(config: &DeckConfiguration) -> Self {
-
 
         return Deck { cards:vec![] }
 
