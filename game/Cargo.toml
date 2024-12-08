@@ -7,6 +7,18 @@ edition = "2021"
 bevy = { version = "0.14", default-features = false }
 bevy_ggrs = "0.16"
 
+serde = "1.0"
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+
+
+solana-sdk = "2.1.5"
+
+rand = "0.8.5"
+rand_chacha = "0.3.1"
+
+x25519-dalek = "2"
+ed25519-dalek = "2"
+
 
 [dev-dependencies]
 bevy = { version = "0.14", default-features = true }
