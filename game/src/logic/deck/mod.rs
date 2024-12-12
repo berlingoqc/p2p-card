@@ -1,3 +1,5 @@
+pub mod encryption;
+
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
 
@@ -59,30 +61,13 @@ impl StartingDeck {
 }
 
 
+
+
 impl Deck {
     fn builder(startin_deck: StartingDeck) -> Self {
         Deck { cards: startin_deck.cards.iter().map(|c| c.to_u32()).collect(), encryption_order: vec![] }
     }
-
-
-    fn player_shuffle(&self, player: MyPlayer) -> Deck {
-
-        let mut order = self.encryption_order.clone();
-        order.push(player.keypair.pubkey().to_string());
-
-        let mut cards = self.cards.clone();
-
-        let mut rng = ChaCha8Rng::seed_from_u64(player.seed);
-
-        cards.shuffle(&mut rng);
-
-
-        Deck { cards: cards, encryption_order: order }
-    }
 }
-
-
-
 
 
 
@@ -127,6 +112,12 @@ mod tests {
         tom.add_other_player(bob.name.clone(), bob.keypair.pubkey().clone());
         tom.add_other_player(john.name.clone(), john.keypair.pubkey().clone());
 
+
+        let starting_deck = StartingDeck::create_default_deck();
+
+        let deck = Deck::builder(starting_deck);
+
+        deck.encrypted_deck(&alice, vec![]);
 
 
         assert_eq!(3, alice.other_players.len());

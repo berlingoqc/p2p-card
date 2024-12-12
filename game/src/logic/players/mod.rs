@@ -22,7 +22,6 @@ pub struct MyPlayer {
     pub seed: u64,
     pub name: String,
 
-
     pub other_players: Vec<OtherPlayer>
 }
 
@@ -58,6 +57,11 @@ impl MyPlayer {
 
     pub fn add_other_player(&mut self, name: String, pubkey: Pubkey) {
         self.other_players.push(OtherPlayer { name, pubkey })
+    }
+
+
+    pub fn get_shared_seed(&self) -> u64 {
+        return self.seed;
     }
 }
 
