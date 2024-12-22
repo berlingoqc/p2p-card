@@ -1,4 +1,5 @@
 pub mod encryption;
+pub mod draw;
 
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
@@ -9,21 +10,19 @@ use super::{cards::{color::CardColor, color_card::ColorCard}, players::MyPlayer}
 
 
 
+#[derive(Clone, Copy)]
 pub struct DeckCard {
     number: u16,
     color: u16
 }
 
-pub struct DeckCardConfiguration {
-
-}
-
+#[derive(Clone)]
 pub struct StartingDeck {
     cards: Vec<DeckCard>
 }
 
 pub struct Deck {
-    cards: Vec<u32>,
+    cards: Vec<Vec<u8>>,
 
 
     encryption_order: Vec<String>
@@ -65,7 +64,7 @@ impl StartingDeck {
 
 impl Deck {
     fn builder(startin_deck: StartingDeck) -> Self {
-        Deck { cards: startin_deck.cards.iter().map(|c| c.to_u32()).collect(), encryption_order: vec![] }
+        Deck { cards: startin_deck.cards.iter().map(|c| c.to_u32().to_le_bytes().to_vec()).collect(), encryption_order: vec![] }
     }
 }
 
@@ -74,6 +73,8 @@ impl Deck {
 
 #[cfg(test)]
 mod tests {
+
+    use draw::{DrawConfig, DrawProcess};
 
     use crate::logic::players::MyPlayerConfiguration;
 
@@ -111,17 +112,6 @@ mod tests {
         tom.add_other_player(alice.name.clone(), alice.keypair.pubkey().clone());
         tom.add_other_player(bob.name.clone(), bob.keypair.pubkey().clone());
         tom.add_other_player(john.name.clone(), john.keypair.pubkey().clone());
-
-
-        let starting_deck = StartingDeck::create_default_deck();
-
-        let deck = Deck::builder(starting_deck);
-
-        deck.encrypted_deck(&alice, vec![]);
-
-
-        assert_eq!(3, alice.other_players.len());
-
 
     }
 

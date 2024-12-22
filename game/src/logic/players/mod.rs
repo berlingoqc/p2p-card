@@ -3,7 +3,10 @@ use std::{fs::File, io::{BufReader, Read}};
 use solana_sdk::{pubkey::Pubkey, signer::keypair::Keypair};
 
 use rand::prelude::*;
-use x25519_dalek::PublicKey;
+use x25519_dalek::{PublicKey, StaticSecret};
+
+use super::encryption::SealingKey;
+
 
 
 pub struct MyPlayerConfiguration {
@@ -12,15 +15,19 @@ pub struct MyPlayerConfiguration {
     pub name: String,
 }
 
+
 pub struct OtherPlayer {
     pub name: String,
     pub pubkey: Pubkey,
+    pub sealing_key: SealingKey
 }
 
 pub struct MyPlayer {
-    pub keypair: Keypair, 
     pub seed: u64,
     pub name: String,
+
+    pub keypair: Keypair, 
+    pub private: StaticSecret,
 
     pub other_players: Vec<OtherPlayer>
 }
@@ -47,6 +54,7 @@ impl MyPlayer {
         let keypair = Keypair::from_bytes(&keypair_vec).unwrap();
 
         MyPlayer {
+            private: StaticSecret::from(keypair.secret().to_bytes()),
             keypair: keypair,
             seed: config.seed,
             name: config.name,
@@ -56,7 +64,7 @@ impl MyPlayer {
 
 
     pub fn add_other_player(&mut self, name: String, pubkey: Pubkey) {
-        self.other_players.push(OtherPlayer { name, pubkey })
+        self.other_players.push(OtherPlayer { name, pubkey, sealing_key: SealingKey::create(&self.private, PublicKey::from(pubkey.to_bytes())) })
     }
 
 
