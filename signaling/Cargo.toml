@@ -1,0 +1,9 @@
+[package]
+name = "signaling"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.15"
+
+bevy_matchbox = { version = "0.11", features = ["signaling"] }

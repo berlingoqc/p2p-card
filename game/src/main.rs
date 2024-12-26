@@ -2,41 +2,95 @@ mod logic;
 mod utils;
 mod network;
 
+mod bev;
 
-use libp2p::{
-    Network,
-    Transport,
-    Multiaddr,
-    PeerId,
-};
-use libp2p_webrtc::{
-    WebRtcConfig,
-    WebRtcTransport,
-};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
+mod arg_parser;
 
+use bev::MyPlayerResource;
+use bevy::{prelude::*, time::common_conditions::on_timer, utils::Duration};
+use logic::players::MyPlayer;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Create a WebRTC transport
-    let transport = WebRtcTransport::new(WebRtcConfig::default()).await?;
+fn main() {
 
-    // Create a network with the WebRTC transport
-    let mut network = Network::new(transport);
+    let user_config = arg_parser::load_my_player_config().unwrap();
+    let my_player = MyPlayer::load(user_config);
 
-    // Get the local peer ID
-    let local_peer_id = network.local_peer_id();
-    println!("Your Peer ID: {:?}", local_peer_id);
+    let my_player_resource = MyPlayerResource {
+        player: my_player,
+    };
 
-    // Wait for the other peer's ID 
-    println!("Paste the other peer's ID:");
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input)?;
-
-    // Parse the input string into a PeerId
-    let other_peer_id = PeerId::from_bytes(hex::decode(input.trim())?)?; 
-
-    // ... (Rest of your connection logic) ...
-
-    Ok(())
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .add_systems(Startup, network::start_socket)
+        .add_systems(Update, network::receive_messages)
+        .add_systems(
+            Update,
+            network::send_message.run_if(on_timer(Duration::from_secs(5))),
+        )
+        .insert_resource(my_player_resource)
+        .run();
 }
+
+
+/*
+
+use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM for symmetric encryption
+use aes_gcm::aead::{Aead, AeadMut,};
+use ssss::{gen_shares, unlock, SsssConfig};
+use x25519_dalek::{StaticSecret, PublicKey};
+use hkdf::Hkdf;
+use sha2::Sha256;
+use rand::Rng;
+use aes_gcm::KeyInit;
+
+
+
+#[derive(Clone)]
+struct Card {
+    value: u32,
+}
+
+fn main() {
+
+    let mut rng = rand::rngs::OsRng;
+    
+    let mut deck: Vec<Vec<u8>> = vec![b"cart -1".to_vec(), b"cart 0".to_vec(), b"cart 1".to_vec()];
+
+    let encrypted_deck: Vec<(Vec<u8>, [u8; 32])> = deck.iter().map(|card| {
+        let symmetric_key: [u8; 32] = rng.gen();
+        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&symmetric_key));
+        let nonce = [0; 12];
+        let nonce = Nonce::from_slice(&nonce); // Use random nonce
+
+        (cipher
+                .encrypt(nonce, card.as_slice())
+                .expect("AES encryption failed"), symmetric_key)
+    }).collect();
+
+    let config = SsssConfig::default();
+
+    let shares: Vec<Vec<String>> = encrypted_deck.iter().map(|item| {
+        let shares = gen_shares(&config, &item.1).unwrap();
+
+        shares
+    }).collect();
+
+
+    for (i, (encrypted_card, _)) in encrypted_deck.iter().enumerate() {
+
+        let shares = shares.get(i).unwrap();
+
+        let symmetric_key = unlock(shares).unwrap();
+
+        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&symmetric_key));
+        let nonce = [0; 12];
+        let nonce = Nonce::from_slice(&nonce); // Use random nonce
+
+        let card = cipher.decrypt(&nonce, encrypted_card.as_slice()).unwrap();
+        println!("Card {}", String::from_utf8(card).unwrap());
+
+    }
+
+
+}
+    */

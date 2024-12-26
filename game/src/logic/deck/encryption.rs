@@ -1,3 +1,14 @@
+
+pub type EncryptedCard = Vec<u8>;
+
+
+
+
+
+
+
+
+/*
 use rand_chacha::ChaCha8Rng;
 use sha2::{Sha256, Digest};
 
@@ -28,7 +39,6 @@ fn encrypt_card(card: &mut Vec<u8>, player: &mut MyPlayer) {
 }
 
 
-pub type EncryptedCard = Vec<u8>;
 
 
 
@@ -55,3 +65,4 @@ impl Deck {
 
     }
 }
+*/
