@@ -1,18 +1,15 @@
-# 4Color
+# p2p-card
 
-The repository is an exercice to write a decentralized cross plateform game using p2p and blockchain that
-does not required any server to handle game.
-
-
-The game logic is a clone of the UNO gameplay using the following technologies.
+The repository is an exercice to write a decentralized cross plateform game using p2p and encryption.
 
 
-* Bevy
-* GGRS
-* Solano
+The game will not implement any card game logic , it will handle the security , agreement and communication.
+After that like in real life players have to hold each other accountable to follow the rule.
 
 
-## Dev entry
+Using the following library
+
+* bevy (rendering)
+* matchbox (webrtc wrapper)
 
 
-# Day 1 : 06 december , starting project
