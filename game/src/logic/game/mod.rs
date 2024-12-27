@@ -117,9 +117,15 @@ mod tests {
 
         assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), shared_game_state.deck.cards.len());
 
-
         assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), alice_game_state.parts.len());
         assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), john_game_state.parts.len());
+
+
+        let encrypted_draw_cards = shared_game_state.deck.draw_cards(1);
+
+
+
+
 
     }
 

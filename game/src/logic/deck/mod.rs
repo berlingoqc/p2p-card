@@ -73,7 +73,7 @@ impl Deck {
             return Err(());
         }
 
-        return Ok(vec![]);
+        return Ok(self.cards.split_off(quantity as usize));
     }
 }
 
