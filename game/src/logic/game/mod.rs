@@ -1,13 +1,15 @@
 use std::collections::HashMap;
 
 
+use super::deck::encryption::{encrypt_cards_from_deck, encrypt_shares_for_player, PrivateEncryptedCards};
+use super::deck::{Deck, PartialDeck};
 use super::encryption::SealingKey;
 use super::players::MyPlayer;
 use super::{deck::StartingDeck, players::OtherPlayer};
 
 pub struct PreGameConfiguration {
-    pub max_number_players: u32,
-    pub min_number_players: u32,
+    pub max_number_players: u8,
+    pub min_number_players: u8,
 
     pub game_name: String,
     pub game_type_name: String,
@@ -18,15 +20,9 @@ pub struct PreGameConfiguration {
 
 pub struct GameConfiguration {
     pub player_order: Vec<String>,
-    pub threashold: u32,
+    pub threashold: u8,
 }
 
-pub struct PrivatePlayerGameState {
-    // My parts for each of the card , the id is the noune
-    pub parts: HashMap<u32, Vec<u8>>,
-    pub sealing_keys: HashMap<String, SealingKey>,
-
-}
 
 
 pub struct AgreedSharedGameState {
@@ -37,41 +33,7 @@ pub struct AgreedSharedGameState {
 
 pub struct SharedGameState {
     pub turn: String,
-}
-
-impl PrivatePlayerGameState {
-    pub fn new(my_player: &MyPlayer, other_players: &Vec<OtherPlayer>) -> Self {
-
-        let mut sealing_keys = HashMap::new();
-        for player in other_players.iter() {
-            sealing_keys.insert(player.name.clone(), SealingKey::create(&my_player.private, player.pub_key.clone()));
-        }
-
-        Self {
-            parts: HashMap::new(),
-            sealing_keys
-        }
-    }
-
-    fn encrypt_share_for_player(&self, card_nonce: u32, other_player: &OtherPlayer) -> Vec<u8> {
-        let sealing_key = self.sealing_keys.get(&other_player.name).unwrap();
-
-        sealing_key.encrypt(card_nonce, self.parts.get(&card_nonce).unwrap()).unwrap()
-
-    }
-
-    fn decrypt_share_from_player(&mut self, payload: Vec<u8>, other_player: &OtherPlayer) {
-        let sealing_key = self.sealing_keys.get(&other_player.name).unwrap();
-
-        //sealing_key.decrypt(card_nonce, self.parts.get(&card_nonce).unwrap()).unwrap() 
-    }
-
-    fn decrypt_symmetric_key(&mut self) -> Result<(), ()> {
-
-        Ok(())
-    }
-
-
+    pub deck: Deck,
 }
 
 
@@ -79,7 +41,7 @@ impl PrivatePlayerGameState {
 
 #[cfg(test)]
 mod tests {
-    use crate::logic::players::{MyPlayer, MyPlayerConfiguration};
+    use crate::logic::{encryption::private::PrivatePlayerGameState, players::{MyPlayer, MyPlayerConfiguration}};
 
     use super::*;
 
@@ -105,7 +67,7 @@ mod tests {
 
         let game_configuration = GameConfiguration {
             player_order: vec![alice.name.clone(), john.name.clone()],
-            threashold: 4,
+            threashold: 2,
         };
 
         let alice_other_player = alice.to_other_player();
@@ -120,27 +82,44 @@ mod tests {
         };
 
 
-        let shared_game_state = SharedGameState {
+        let mut shared_game_state = SharedGameState {
             turn: alice.name.clone(),
+            deck: Deck::default()
         };
 
-        /*
-        let mut alice_game_state = PrivatePlayerGameState::new(agreed_shared_game_state.game_configuration.threashold, &alice, &agreed_shared_game_state.players);
-        let mut john_game_state = PrivatePlayerGameState::new(agreed_shared_game_state.game_configuration.threashold, &john, &agreed_shared_game_state.players);
+        let mut alice_game_state = PrivatePlayerGameState::new(&alice, &vec![john_other_player]);
+        let mut john_game_state = PrivatePlayerGameState::new(&john, &vec![alice_other_player]);
 
-        let encrypted_john_from_alice = alice_game_state.encrypt_share_for_player(&john_other_player);
-        let encrypted_alice_from_john = john_game_state.encrypt_share_for_player(&alice_other_player);
+        let alice_indexes: Vec<u32> = vec![0, 1, 2, 3, 4];
+        let john_indexes: Vec<u32> = vec![5, 6, 7, 8 ];
 
-        alice_game_state.store_share_from_player(encrypted_alice_from_john, &john_other_player);
-        john_game_state.store_share_from_player(encrypted_john_from_alice, &alice_other_player);
+        let starting_deck = agreed_shared_game_state.pregame_configuration.starting_deck.to_vec();
+
+        let alice_starting_data = alice_game_state.generate_starting_data(
+            &starting_deck, 
+            &alice_indexes,
+            agreed_shared_game_state.game_configuration.threashold,
+        ).unwrap();
+
+        let john_starting_data = john_game_state.generate_starting_data(
+            &starting_deck, 
+            &john_indexes,
+            agreed_shared_game_state.game_configuration.threashold,
+        ).unwrap();
+
+        shared_game_state.deck.add_encrypted_card_from_player(&mut alice_starting_data.1.clone());
+        shared_game_state.deck.add_encrypted_card_from_player(&mut john_starting_data.1.clone());
 
 
-        //assert_eq!(alice_game_state.shares.get("john").unwrap().their_share, john_game_state.shares.get("alice").unwrap().share);
+        alice_game_state.add_other_player_starting_data(&john.name, john_starting_data.0.get(&alice.name).unwrap()).unwrap();
+        john_game_state.add_other_player_starting_data(&alice.name, alice_starting_data.0.get(&john.name).unwrap()).unwrap();
 
 
-        alice_game_state.calculate_final_share().unwrap();
-        john_game_state.calculate_final_share().unwrap();
-        */
+        assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), shared_game_state.deck.cards.len());
+
+
+        assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), alice_game_state.parts.len());
+        assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), john_game_state.parts.len());
 
     }
 

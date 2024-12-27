@@ -31,15 +31,12 @@ fn main() {
         .run();
 }
 
-
 /*
-
 use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM for symmetric encryption
 use aes_gcm::aead::{Aead, AeadMut,};
+use rand::seq::SliceRandom;
 use ssss::{gen_shares, unlock, SsssConfig};
 use x25519_dalek::{StaticSecret, PublicKey};
-use hkdf::Hkdf;
-use sha2::Sha256;
 use rand::Rng;
 use aes_gcm::KeyInit;
 
@@ -67,9 +64,12 @@ fn main() {
                 .expect("AES encryption failed"), symmetric_key)
     }).collect();
 
-    let config = SsssConfig::default();
+    let mut config = SsssConfig::default();
+    config.set_num_shares(3);
+    config.set_threshold(3);
 
-    let shares: Vec<Vec<String>> = encrypted_deck.iter().map(|item| {
+
+    let mut shares: Vec<Vec<String>> = encrypted_deck.iter().map(|item| {
         let shares = gen_shares(&config, &item.1).unwrap();
 
         shares
@@ -78,7 +78,9 @@ fn main() {
 
     for (i, (encrypted_card, _)) in encrypted_deck.iter().enumerate() {
 
-        let shares = shares.get(i).unwrap();
+        let mut shares = shares.get_mut(i).unwrap();
+        shares.shuffle(&mut rng);
+        //shares.remove(1);
 
         let symmetric_key = unlock(shares).unwrap();
 
@@ -93,4 +95,5 @@ fn main() {
 
 
 }
-    */
+
+*/

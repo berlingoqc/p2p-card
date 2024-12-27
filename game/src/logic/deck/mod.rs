@@ -1,3 +1,5 @@
+use encryption::{EncryptedCard, EncryptedCards};
+
 pub mod encryption;
 pub mod draw;
 
@@ -9,14 +11,16 @@ pub struct DeckCard {
 
 #[derive(Clone)]
 pub struct StartingDeck {
-    cards: Vec<DeckCard>
+    pub cards: Vec<DeckCard>
 }
 
+pub struct PartialDeck {
+    pub cards: Vec<Vec<u8>>
+}
+
+#[derive(Default)]
 pub struct Deck {
-    cards: Vec<Vec<u8>>,
-
-
-    encryption_order: Vec<String>
+    pub cards: Vec<Vec<u8>>,
 }
 
 
@@ -48,14 +52,28 @@ impl StartingDeck {
             DeckCard { number: 9},
         ] }
     }
+
+    pub fn to_vec(&self) -> Vec<u32> {
+        self.cards.iter().map(|v| v.to_u32()).collect()
+    }
 }
 
 
 
 
 impl Deck {
-    fn builder(startin_deck: StartingDeck) -> Self {
-        Deck { cards: startin_deck.cards.iter().map(|c| c.to_u32().to_le_bytes().to_vec()).collect(), encryption_order: vec![] }
+
+    pub fn add_encrypted_card_from_player(&mut self, cards: &mut EncryptedCards) {
+        self.cards.append(cards);
+    }
+
+    pub fn draw_cards(&mut self, quantity: u32) -> Result<Vec<EncryptedCard>, ()> {
+        if quantity > (self.cards.len() as u32) {
+            eprintln!("deck would run out error");
+            return Err(());
+        }
+
+        return Ok(vec![]);
     }
 }
 
