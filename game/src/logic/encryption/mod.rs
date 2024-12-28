@@ -5,8 +5,15 @@ use aes_gcm::aead::{Aead, AeadMut,};
 use x25519_dalek::{StaticSecret, PublicKey, SharedSecret};
 use aes_gcm::KeyInit;
 
+
+
+
 fn encrypt(nonce: &[u8; 12], plaintext: &[u8], key: &SharedSecret) -> Result<Vec<u8>, ()> {
     let key_bytes = key.as_bytes();
+    encrypt_byte_key(nonce, plaintext, key_bytes)
+}
+
+pub fn encrypt_byte_key(nonce: &[u8; 12], plaintext: &[u8], key_bytes: &[u8; 32]) -> Result<Vec<u8>, ()> {
     let key = Key::<Aes256Gcm>::from_slice(key_bytes);
     let cipher = Aes256Gcm::new(&key);
 
@@ -18,12 +25,16 @@ fn encrypt(nonce: &[u8; 12], plaintext: &[u8], key: &SharedSecret) -> Result<Vec
     output.extend(ciphertext);
     
     Ok(output)
-
 }
+
+
 
 fn decrypt(ciphertext: &[u8], key: &SharedSecret) -> Result<Vec<u8>, ()> {
     let key_bytes = key.as_bytes();
-    let key = Key::<Aes256Gcm>::from_slice(key_bytes);
+    decrypt_with_key(ciphertext, Key::<Aes256Gcm>::from_slice(key_bytes))
+}
+
+pub fn decrypt_with_key(ciphertext: &[u8], key: &Key::<Aes256Gcm>) -> Result<Vec<u8>, ()> {
 
     let cipher = Aes256Gcm::new(&key);
 
@@ -32,7 +43,6 @@ fn decrypt(ciphertext: &[u8], key: &SharedSecret) -> Result<Vec<u8>, ()> {
    Ok(
     cipher.decrypt(nonce, &ciphertext[12..]).unwrap()
    )
- 
 }
 
 
@@ -65,7 +75,7 @@ mod tests {
 
     use rand::{rngs::OsRng, Rng};
 
-    use crate::logic::players::{key_loader::get_key_loader, MyPlayerConfiguration};
+    use crate::logic::{deck::encryption::{generate_random_nonce, get_encrypted_card_nonce}, players::{key_loader::get_key_loader, MyPlayerConfiguration}};
 
     use super::*;
 
@@ -90,11 +100,15 @@ mod tests {
         let sealing_key_john = SealingKey::create(&john_secret, alice_public.clone());
 
 
-        let mut rng = OsRng;
-        let nonce: [u8; 12] = [rng.gen(); 12];
+        let nonce: [u8; 12] = generate_random_nonce();
         let test_data = b"william quintal".to_vec();
 
         let encrypted_data = sealing_key_alice.encrypt(&nonce, &test_data).unwrap();
+
+        let encrypted_data_nonce = get_encrypted_card_nonce(&encrypted_data).unwrap();
+
+
+        assert_eq!(nonce, encrypted_data_nonce);
 
         let decrypted_data = sealing_key_john.decrypt(&encrypted_data).unwrap();
 

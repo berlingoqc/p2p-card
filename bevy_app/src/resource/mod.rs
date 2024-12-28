@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 
-use crate::logic::players::MyPlayer;
-
+use game::logic::players::MyPlayer;
 
 
 

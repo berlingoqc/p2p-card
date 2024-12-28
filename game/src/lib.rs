@@ -1,10 +1,7 @@
-mod logic;
-mod utils;
-mod network;
+pub mod logic;
+pub mod utils;
 
-mod bev;
-
-mod arg_parser;
+/*
 
 use bev::MyPlayerResource;
 use bevy::{prelude::*, time::common_conditions::on_timer, utils::Duration};
@@ -30,7 +27,7 @@ fn main() {
         .insert_resource(my_player_resource)
         .run();
 }
-
+*/
 /*
 use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM for symmetric encryption
 use aes_gcm::aead::{Aead, AeadMut,};

@@ -1,11 +1,5 @@
-use std::collections::HashMap;
-
-
-use super::deck::encryption::{encrypt_cards_from_deck, encrypt_shares_for_player, PrivateEncryptedCards};
-use super::deck::{Deck, PartialDeck};
-use super::encryption::SealingKey;
-use super::players::MyPlayer;
-use super::{deck::StartingDeck, players::OtherPlayer};
+use super::deck::Deck;
+use super::players::OtherPlayer;
 
 pub struct PreGameConfiguration {
     pub max_number_players: u8,
@@ -14,7 +8,7 @@ pub struct PreGameConfiguration {
     pub game_name: String,
     pub game_type_name: String,
 
-    pub starting_deck: StartingDeck,
+    pub starting_deck: Deck,
 
 }
 
@@ -41,7 +35,7 @@ pub struct SharedGameState {
 
 #[cfg(test)]
 mod tests {
-    use crate::logic::{encryption::private::PrivatePlayerGameState, players::{MyPlayer, MyPlayerConfiguration}};
+    use crate::logic::{deck::{encryption::get_encrypted_card_nonce}, encryption::private::{PrivatePlayerGameState, ShareRequest}, players::{MyPlayer, MyPlayerConfiguration}};
 
     use super::*;
 
@@ -62,7 +56,7 @@ mod tests {
             game_type_name: "regular".into(),
             max_number_players: 4,
             min_number_players: 2,
-            starting_deck: StartingDeck::create_default_deck(),
+            starting_deck: Deck::create_default_deck(),
         };
 
         let game_configuration = GameConfiguration {
@@ -91,9 +85,9 @@ mod tests {
         let mut john_game_state = PrivatePlayerGameState::new(&john, &vec![alice_other_player]);
 
         let alice_indexes: Vec<u32> = vec![0, 1, 2, 3, 4];
-        let john_indexes: Vec<u32> = vec![5, 6, 7, 8 ];
+        let john_indexes: Vec<u32> = vec![5, 6, 7, 8, 9 ];
 
-        let starting_deck = agreed_shared_game_state.pregame_configuration.starting_deck.to_vec();
+        let starting_deck = agreed_shared_game_state.pregame_configuration.starting_deck.cards.clone();
 
         let alice_starting_data = alice_game_state.generate_starting_data(
             &starting_deck, 
@@ -121,11 +115,26 @@ mod tests {
         assert_eq!(agreed_shared_game_state.pregame_configuration.starting_deck.cards.len(), john_game_state.parts.len());
 
 
-        let encrypted_draw_cards = shared_game_state.deck.draw_cards(1);
+        // Each player does this but only the one picking will keep them and be able to decypt them
+        let encrypted_draw_cards = shared_game_state.deck.draw_cards(1).unwrap();
+
+        // Alice is the one drawing so she ask for decryption
+        let share_request = ShareRequest {
+            player: alice.name.clone(),
+            cards_nonce: encrypted_draw_cards.iter().map(|c| get_encrypted_card_nonce(c).unwrap()).collect(),
+        };
+
+        let john_share_response_for_alice = john_game_state.give_other_player_your_shares(&share_request).unwrap();
+
+        alice_game_state.add_other_player_shares(&john.name, &john_share_response_for_alice).unwrap();
 
 
+        for encrypted_draw_card in encrypted_draw_cards.iter() {
 
+            let draw_card = alice_game_state.read_encrypted_card(encrypted_draw_card).unwrap();
 
+            println!("draw card: {:?}", draw_card);
+        }
 
     }
 

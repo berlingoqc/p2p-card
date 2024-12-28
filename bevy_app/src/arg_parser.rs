@@ -1,5 +1,4 @@
-use crate::logic::players::MyPlayerConfiguration;
-
+use game::logic::players::MyPlayerConfiguration;
 
 use clap::Parser;
 

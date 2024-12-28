@@ -1,10 +1,15 @@
 use std::collections::HashMap;
+use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM for symmetric encryption
+use aes_gcm::aead::{Aead, AeadMut,};
+use rand::seq::SliceRandom;
+use ssss::{gen_shares, unlock, SsssConfig};
+use x25519_dalek::{StaticSecret, PublicKey};
+use rand::Rng;
+use aes_gcm::KeyInit;
 
-use bevy::prelude::Res;
+use crate::logic::{deck::encryption::{encrypt_cards_from_deck, encrypt_shares_for_player, get_encrypted_card_nonce, to_encrypted_card, to_own_shared, EncryptedCard, EncryptedCards, SharedPrivateCardShares}, players::{MyPlayer, OtherPlayer}};
 
-use crate::logic::{deck::encryption::{encrypt_cards_from_deck, encrypt_shares_for_player, to_encrypted_card, to_own_shared, EncryptedCards, PrivateEncryptedCards, SharedPrivateCardShares}, players::{MyPlayer, OtherPlayer}};
-
-use super::SealingKey;
+use super::{decrypt_with_key, SealingKey};
 
 pub struct PrivatePlayerGameState {
     // My parts for each of the card , the id is the noune
@@ -12,7 +17,18 @@ pub struct PrivatePlayerGameState {
     pub sealing_keys: HashMap<String, SealingKey>,
 }
 
+pub struct ShareRequest {
+    pub player: String,
+    pub cards_nonce: Vec<[u8; 12]>,
+}
+
+pub struct ShareResponse {
+    pub cards_nonce: HashMap<[u8; 12], Vec<u8>>
+}
+
 impl PrivatePlayerGameState {
+
+    // Create the private game state , creating encryption keys for each other player
     pub fn new(my_player: &MyPlayer, other_players: &Vec<OtherPlayer>) -> Self {
 
         let mut sealing_keys = HashMap::new();
@@ -27,7 +43,8 @@ impl PrivatePlayerGameState {
     }
 
 
-    pub fn generate_starting_data(&mut self, starting_deck: &Vec<u32>, indexes: &Vec<u32>, threshold: u8) -> Result<(
+    // When game is starting this will generate the part of the deck from this player
+    pub fn generate_starting_data(&mut self, starting_deck: &Vec<Vec<u8>>, indexes: &Vec<u32>, threshold: u8) -> Result<(
         HashMap<String, SharedPrivateCardShares>,
         EncryptedCards,
     ), ()> {
@@ -49,6 +66,7 @@ impl PrivatePlayerGameState {
 
     }
 
+    // Add the data receive by the other player , your share for the card the generated
     pub fn add_other_player_starting_data(&mut self, other_player: &String, shared: &SharedPrivateCardShares) -> Result<(), ()> {
 
         for (nonce, cipher) in shared.iter() {
@@ -63,16 +81,48 @@ impl PrivatePlayerGameState {
 
         }
 
-
         Ok(())
     }
 
 
+    pub fn give_other_player_your_shares(&mut self, share_request: &ShareRequest) -> Result<ShareResponse, ()> {
+        let sealing_key = self.sealing_keys.get(&share_request.player).unwrap();
 
-    // Basically the process is that,
-    // Each card is encrypted with a random symmetric key and a random nonce
-    // The symmetric key is encrypted with SSS to create a split secret shared amongst other player
+        let items = share_request.cards_nonce.iter()
+            .map(|nonce| {
+                let share = self.parts.get(nonce).unwrap().get(0).unwrap();
 
-    // So basically each player are assign a random set of card from the deck to encrypt and shuffle
+                (
+                    nonce.clone(),
+                    sealing_key.encrypt(nonce, &share.as_bytes().to_vec()).unwrap()
+                )
+            }).collect();
 
+        Ok(ShareResponse { cards_nonce: items })
+    }
+
+    pub fn add_other_player_shares(&mut self, other_player: &String, share_response: &ShareResponse) -> Result<(), ()> {
+        let sealing_key = self.sealing_keys.get(other_player).unwrap();
+
+        for (nonce, encrypted_share) in share_response.cards_nonce.iter() {
+            let parts = self.parts.get_mut(nonce).unwrap();
+            let share = sealing_key.decrypt(encrypted_share).unwrap();
+            let share = String::from_utf8(share).unwrap();
+            parts.push(share);
+        }
+
+        Ok(())
+    }
+    
+    pub fn read_encrypted_card(&self, card: &EncryptedCard) -> Result<Vec<u8>, ()> {
+        let nonce = get_encrypted_card_nonce(card).unwrap();
+
+        let shares = self.parts.get(&nonce).unwrap();
+
+        let symmetric_key = unlock(shares).unwrap();
+
+        let card = decrypt_with_key(&card, &Key::<Aes256Gcm>::from_slice(&symmetric_key)).unwrap();
+
+        Ok(card)
+    }
 }

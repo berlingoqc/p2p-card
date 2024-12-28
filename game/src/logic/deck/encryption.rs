@@ -3,11 +3,12 @@ use std::collections::HashMap;
 
 use aes_gcm::{Aes256Gcm, Key, Nonce}; // AES-GCM for symmetric encryption
 use aes_gcm::aead::Aead;
+use rand::distributions::Alphanumeric;
 use ssss::gen_shares;
 use rand::Rng;
 use aes_gcm::KeyInit;
 
-use crate::logic::encryption::SealingKey;
+use crate::logic::encryption::{encrypt_byte_key, SealingKey};
 
 
 pub type EncryptedCard = Vec<u8>;
@@ -33,10 +34,26 @@ pub fn to_encrypted_card(card: &PrivateEncryptedCard) -> EncryptedCard {
 pub fn to_own_shared(cards: &PrivateEncryptedCards) -> HashMap<[u8; 12], Vec<String>> {
     cards.iter().map(|p| (p.nonce.clone(), p.shares.clone())).collect()
 }
+
+pub fn get_encrypted_card_nonce(ec: &EncryptedCard) -> Result<[u8; 12], ()> {
+    let mut result = [0; 12];
+    result.copy_from_slice(&ec[..12]);
+    Ok(result)
+}
     
+pub fn generate_random_nonce() -> [u8; 12] {
+    let mut rng = rand::thread_rng();
+    let mut result = [0u8; 12]; 
+
+    for i in 0..12 {
+        result[i] = rng.sample(Alphanumeric).into(); 
+    }
+
+    result
+}
 
 // Encrypte all required card from the deck with a symmetric key and store it with the nonce and the shares
-pub fn encrypt_cards_from_deck(startind_deck: &Vec<u32>, indexes: &Vec<u32>, num_shares: u8, threshold: u8) -> Result<PrivateEncryptedCards, ()> {
+pub fn encrypt_cards_from_deck(startind_deck: &Vec<Vec<u8>>, indexes: &Vec<u32>, num_shares: u8, threshold: u8) -> Result<PrivateEncryptedCards, ()> {
     let mut rng = rand::rngs::OsRng;
     let mut config = ssss::SsssConfig::default();
 
@@ -47,14 +64,12 @@ pub fn encrypt_cards_from_deck(startind_deck: &Vec<u32>, indexes: &Vec<u32>, num
 
     for i in indexes.iter() {
         let symmetric_key: [u8; 32] = rng.gen();
-        let cipher = Aes256Gcm::new(Key::<Aes256Gcm>::from_slice(&symmetric_key));
-        let nonce_og = [rng.gen(); 12];
-        let nonce = Nonce::from_slice(&nonce_og); 
+        let nonce_og = generate_random_nonce();
 
-        let ciphertext = cipher
-            .encrypt(nonce, startind_deck.get(*i as usize).unwrap().to_le_bytes().as_slice())
-            .expect("AES encryption failed");
-
+        let ciphertext = encrypt_byte_key(
+            &nonce_og, 
+        startind_deck.get(*i as usize).unwrap().as_slice(),
+            &symmetric_key).unwrap();
 
         encrypted_cards.push(PrivateEncryptedCard {
             card: ciphertext,
