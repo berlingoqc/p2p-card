@@ -673,6 +673,8 @@ dependencies = [
  "bevy_matchbox",
  "clap",
  "game",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

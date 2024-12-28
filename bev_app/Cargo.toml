@@ -3,13 +3,21 @@ name = "bev_app"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+web = ["web-sys", "wasm-bindgen"]
+native = ["clap"]
+
+
 [dependencies]
 bevy = "0.15"
 bevy_matchbox = "0.11"
 
 game = { path = "../game" }
 
-clap = { version = "*", features = ["derive"] }
+clap = { version = "*", features = ["derive"], optional = true }
+
+wasm-bindgen = { version = "0.2", optional = true }
+web-sys = { version = "0.3", features = ["Window", "Document", "Element"], optional = true }
 
 [dev-dependencies]
 bevy = { version = "0.15", default-features = true }
