@@ -5,7 +5,7 @@ edition = "2021"
 
 [features]
 web = ["web-sys", "wasm-bindgen"]
-native = ["clap"]
+native = []
 
 
 [dependencies]
@@ -13,8 +13,12 @@ bevy = "0.15"
 bevy_matchbox = "0.11"
 
 game = { path = "../game" }
+rand = "*"
+rand_distr = "*"
 
-clap = { version = "*", features = ["derive"], optional = true }
+base64 = "*"
+
+clap = { version = "*", features = ["derive"] }
 
 wasm-bindgen = { version = "0.2", optional = true }
 web-sys = { version = "0.3", features = ["Window", "Document", "Element"], optional = true }

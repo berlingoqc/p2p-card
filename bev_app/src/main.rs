@@ -2,17 +2,20 @@ mod resource;
 mod components;
 mod network;
 mod arg_parser;
+mod utils;
 
-use resource::MyPlayerResource;
+use rand::{rngs::StdRng, SeedableRng};
+use resource::{server::{SelectedMatchboxServer, SelectedRoom}, MyPlayerResource};
 use bevy::{prelude::*, time::common_conditions::on_timer, utils::Duration};
 use game::logic::players::MyPlayer;
 
 fn main() {
 
-    let user_config = arg_parser::load_my_player_config().unwrap();
+    let (user_config) = arg_parser::load_config().unwrap();
     let my_player = MyPlayer::load(user_config);
 
     let my_player_resource = MyPlayerResource {
+        rng: StdRng::seed_from_u64(my_player.hash),
         player: my_player,
     };
 
@@ -25,6 +28,11 @@ fn main() {
             ),
             ..default()
         }).set(ImagePlugin::default_nearest()))
+
+        .insert_resource(SelectedMatchboxServer {
+            url: "ws://localhost".to_string(),
+        })
+        .insert_resource(SelectedRoom::create_my_room(&my_player_resource))
 
         .add_systems(Startup, (network::start_socket, setup_camera))
         .add_systems(Update, network::receive_messages)

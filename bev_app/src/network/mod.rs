@@ -2,6 +2,8 @@
 use bevy::prelude::*;
 use bevy_matchbox::prelude::*;
 
+use crate::resource::{server::{generate_rool_url, SelectedMatchboxServer, SelectedRoom}, MyPlayerResource};
+
 const CHANNEL_ID: usize = 0;
 
 
@@ -29,8 +31,15 @@ pub struct RoomConfiguration {
 }
 
 
-pub fn start_socket(mut commands: Commands) {
-    let socket = MatchboxSocket::new_reliable("ws://localhost:3536/hello");
+pub fn start_socket(
+    mut commands: Commands,
+    selected_server: Res<SelectedMatchboxServer>,
+    selected_room: Res<SelectedRoom>,
+    my_player: Res<MyPlayerResource>,
+) {
+    let socket = MatchboxSocket::new_reliable(
+        generate_rool_url(&selected_server, &selected_room, &my_player)
+    );
     commands.insert_resource(socket);
 }
 

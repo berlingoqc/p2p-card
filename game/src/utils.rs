@@ -20,3 +20,15 @@ pub fn splice<T>(v: &mut Vec<T>, start: usize, count: usize) -> Vec<T> {
 
     removed
 }
+
+
+
+
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+
+pub fn hash_to_u64(data: Vec<u8>) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    data.hash(&mut hasher);
+    hasher.finish()
+}

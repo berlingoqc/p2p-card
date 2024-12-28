@@ -11,26 +11,38 @@ struct Args {
     user_name: String,
 
     #[arg(short, long)]
-    wall_path: String,
+    wallet_path: String,
 
-    #[arg(short, long, default_value_t = 1)]
-    seed: u64,
+    #[arg(short, long)]
+    matchbox_server: String,
+
+    // if not provide create a default room for you
+    #[arg(short, long)]
+    room: String,
 }
 
 #[cfg(not(feature = "web"))]
-pub fn load_my_player_config() -> Result<MyPlayerConfiguration, ()> {
+pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, SelectedRoom), ()> {
+    use crate::resource::server::{SelectedMatchboxServer, SelectedRoom};
+
 
     let args = Args::parse();
 
-    Ok(MyPlayerConfiguration {
+    Ok((
+        MyPlayerConfiguration {
         name: args.user_name,
         profile_public_key: None,
-        wallet_path: args.wall_path,
-    })
+        wallet_path: args.wallet_path,
+        },
+        SelectedMatchboxServer {
+            url: args.matchbox_server,
+        }
+        )
+    )
 }
 
 #[cfg(feature = "web")]
-pub fn load_my_player_config() -> Result<MyPlayerConfiguration, ()> {
+pub fn load_config() -> Result<(MyPlayerConfiguration), ()> {
     use wasm_bindgen::prelude::*;
 
     // Access the global `window` object

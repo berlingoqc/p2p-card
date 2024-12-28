@@ -669,10 +669,13 @@ checksum = "8c3c1a368f70d6cf7302d78f8f7093da241fb8e8807c05cc9e51a125895a6d5b"
 name = "bev_app"
 version = "0.1.0"
 dependencies = [
+ "base64 0.21.7",
  "bevy",
  "bevy_matchbox",
  "clap",
  "game",
+ "rand 0.7.3",
+ "rand_distr",
  "wasm-bindgen",
  "web-sys",
 ]

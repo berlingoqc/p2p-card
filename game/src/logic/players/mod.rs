@@ -3,6 +3,8 @@ pub mod key_loader;
 use key_loader::get_key_loader;
 use x25519_dalek::{PublicKey, StaticSecret};
 
+use crate::utils::hash_to_u64;
+
 
 
 
@@ -16,6 +18,9 @@ pub struct MyPlayerConfiguration {
 pub struct OtherPlayer {
     pub name: String,
 
+    // Hash of my public key
+    pub hash: u64,
+
     // Profile public_key
     pub profile_public_key: PublicKey,
 
@@ -25,6 +30,9 @@ pub struct OtherPlayer {
 
 pub struct MyPlayer {
     pub name: String,
+
+    // Hash of my public key
+    pub hash: u64,
 
     // Profile public key
     pub profile_public_key: PublicKey,
@@ -53,6 +61,7 @@ impl MyPlayer {
         MyPlayer {
             private:secret,
             pub_key: pub_key,
+            hash: hash_to_u64(profile_public_key.as_bytes().to_vec()),
             profile_public_key: profile_public_key,
             name: config.name,
         }
@@ -61,6 +70,7 @@ impl MyPlayer {
     pub fn to_other_player(&self) -> OtherPlayer {
         OtherPlayer {
             name: self.name.clone(),
+            hash: hash_to_u64(self.profile_public_key.as_bytes().to_vec()),
             profile_public_key: self.profile_public_key.clone(),
             pub_key: self.pub_key.clone(),
         }
