@@ -22,9 +22,9 @@ pub fn load_my_player_config() -> Result<MyPlayerConfiguration, ()> {
 
     let args = Args::parse();
 
-
     Ok(MyPlayerConfiguration {
         name: args.user_name,
+        profile_public_key: None,
         wallet_path: args.wall_path,
     })
 }
@@ -53,6 +53,7 @@ pub fn load_my_player_config() -> Result<MyPlayerConfiguration, ()> {
 
     Ok(MyPlayerConfiguration {
         name: "berlingoqc".to_string(),
+        profile_public_key: None,
         wallet_path: "".to_string(),
     })
 }

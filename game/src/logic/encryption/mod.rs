@@ -92,6 +92,7 @@ mod tests {
 
         let (john_public, john_secret) = get_key_loader(&MyPlayerConfiguration{
             name: "".into(),
+            profile_public_key: None,
             wallet_path: test_case!("/wallets/john.json"),
         }).unwrap().load_key_pair().unwrap();
 

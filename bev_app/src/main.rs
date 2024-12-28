@@ -1,4 +1,5 @@
 mod resource;
+mod components;
 mod network;
 mod arg_parser;
 
@@ -20,9 +21,10 @@ fn main() {
             primary_window: Some(Window {
                 canvas: Some("#bevy-canvas".into()),
                 ..default()
-            }),
+            }
+            ),
             ..default()
-        }))
+        }).set(ImagePlugin::default_nearest()))
 
         .add_systems(Startup, (network::start_socket, setup_camera))
         .add_systems(Update, network::receive_messages)
@@ -33,7 +35,7 @@ fn main() {
         .insert_resource(my_player_resource)
 
 
-        .insert_resource(ClearColor(Color::rgb(0.9, 0.3, 0.6)))
+        .insert_resource(ClearColor(Color::rgb(0.3, 0.3, 0.6)))
         .run();
 }
 
@@ -42,7 +44,7 @@ fn setup_camera(
     mut commands: Commands,
 ) {
     // configure the background color (if any), for a specific camera (2D)
-commands.spawn(Camera2d {
-    ..Default::default()
-});
+    commands.spawn(Camera2d {
+        ..Default::default()
+    });
 }

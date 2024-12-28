@@ -29,7 +29,6 @@ pub struct RoomConfiguration {
 }
 
 
-
 pub fn start_socket(mut commands: Commands) {
     let socket = MatchboxSocket::new_reliable("ws://localhost:3536/hello");
     commands.insert_resource(socket);
