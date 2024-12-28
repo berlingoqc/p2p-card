@@ -1,5 +1,7 @@
 use game::logic::players::MyPlayerConfiguration;
 
+use crate::resource::server::{SelectedMatchboxServer, SelectedRoom};
+
 #[cfg(not(feature = "web"))]
 use clap::Parser;
 
@@ -23,26 +25,27 @@ struct Args {
 
 #[cfg(not(feature = "web"))]
 pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, SelectedRoom), ()> {
-    use crate::resource::server::{SelectedMatchboxServer, SelectedRoom};
 
 
     let args = Args::parse();
 
     Ok((
         MyPlayerConfiguration {
-        name: args.user_name,
-        profile_public_key: None,
-        wallet_path: args.wallet_path,
+            name: args.user_name,
+            profile_public_key: None,
+            wallet_path: args.wallet_path,
         },
         SelectedMatchboxServer {
             url: args.matchbox_server,
+        },
+        SelectedRoom {
+            name: args.room,
         }
-        )
-    )
+    ))
 }
 
 #[cfg(feature = "web")]
-pub fn load_config() -> Result<(MyPlayerConfiguration), ()> {
+pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, SelectedRoom), ()> {
     use wasm_bindgen::prelude::*;
 
     // Access the global `window` object
@@ -57,15 +60,28 @@ pub fn load_config() -> Result<(MyPlayerConfiguration), ()> {
     let html_element = element.dyn_into::<web_sys::HtmlElement>().unwrap();
     
     // Access custom property
-    let custom_property = html_element
+    let username = html_element
         .get_attribute("username")
-        .unwrap_or_else(|| "default-value".to_string());
-    
-    println!("Custom property: {}", custom_property);
+        .unwrap_or_else(|| "bob".to_string());
 
-    Ok(MyPlayerConfiguration {
-        name: "berlingoqc".to_string(),
+    let selected_matchbox_server = html_element
+        .get_attribute("matchbox-server")
+        .unwrap_or_else(|| "ws://localhost:3536".to_string());
+
+    let selected_room = html_element
+        .get_attribute("room")
+        .unwrap_or_else(|| "bob".to_string());
+
+    Ok((MyPlayerConfiguration {
+        name: username,
         profile_public_key: None,
         wallet_path: "".to_string(),
-    })
+        },
+        SelectedMatchboxServer {
+            url: selected_matchbox_server,
+        },
+        SelectedRoom {
+            name: selected_room,
+        }
+    ))
 }

@@ -43,8 +43,9 @@ command = "cargo"
 
 [tasks.run]
 command = "${CARGO_TARGET_DIR}/${ENV_DIR}/${CARGO_MAKE_BINARY_EXECUTABLE_NAME}"
-args = ["--user-name", "bob", "--wall-path", "../tests/wallets/bob.json"]
+args = ["--user-name", "bob", "--wallet-path", "../tests/wallets/bob.json", "--matchbox-server", "ws://localhost:3536", "--room", "test-12345"]
 dependencies = ["build-native"]
+
 
 [tasks.cp-assets-public]
 command = "cp"

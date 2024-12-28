@@ -1162,10 +1162,8 @@ version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5249643ec4d454678835d626b75a063a3a69f853fc5cbcc2f48b9d6d80e133a7"
 dependencies = [
- "async-compat",
  "bevy",
  "cfg-if",
- "matchbox_signaling",
  "matchbox_socket",
 ]
 
@@ -5488,8 +5486,22 @@ dependencies = [
 name = "signaling"
 version = "0.1.0"
 dependencies = [
- "bevy",
- "bevy_matchbox",
+ "async-trait",
+ "axum",
+ "clap",
+ "futures",
+ "matchbox_protocol",
+ "matchbox_signaling",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.9",
+ "tokio",
+ "tokio-stream",
+ "tokio-tungstenite",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
