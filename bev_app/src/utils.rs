@@ -8,7 +8,7 @@ pub fn get_random_shape(
     rng: &mut StdRng,
     mut meshes: &mut ResMut<Assets<Mesh>>,
 ) -> bevy::prelude::Handle<bevy::prelude::Mesh> {
-    let i = rng.gen_range(1, 10);
+    let i = rng.gen_range(1..10);
     match i {
         1 =>  meshes.add(Circle::new(50.0)),
         2 => meshes.add(CircularSector::new(50.0, 1.0)),
@@ -33,5 +33,5 @@ pub fn get_random_color(
 ) -> Color {
     let mut r = StdRng::seed_from_u64(42);
 
-    Color::hsl(r.gen_range(0.0f32, 360.0f32), 0.95, 0.7)
+    Color::hsl(r.gen_range(0.0f32..360.0f32), 0.95, 0.7)
 }
