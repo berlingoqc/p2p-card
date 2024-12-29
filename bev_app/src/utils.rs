@@ -30,6 +30,8 @@ pub fn get_random_shape(
 
 pub fn get_random_color(
     rng: &mut StdRng,
-) -> () {
+) -> Color {
     let mut r = StdRng::seed_from_u64(42);
+
+    Color::hsl(r.gen_range(0.0f32, 360.0f32), 0.95, 0.7)
 }

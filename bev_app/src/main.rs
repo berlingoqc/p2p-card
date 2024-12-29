@@ -4,6 +4,7 @@ mod network;
 mod arg_parser;
 mod utils;
 
+use components::players::setup_my_player;
 use rand::{rngs::StdRng, SeedableRng};
 use resource::MyPlayerResource;
 use bevy::{prelude::*, time::common_conditions::on_timer, utils::Duration};
@@ -23,6 +24,7 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 canvas: Some("#bevy-canvas".into()),
+                title: "p2p-card".to_string(),
                 ..default()
             }
             ),
@@ -32,7 +34,9 @@ fn main() {
         .insert_resource(selected_server)
         .insert_resource(selected_room)
 
-        .add_systems(Startup, (network::start_socket, setup_camera))
+        .add_systems(Startup, (
+            network::start_socket, setup_camera, setup_my_player,
+        ))
         .add_systems(Update, network::receive_messages)
         .add_systems(
             Update,
