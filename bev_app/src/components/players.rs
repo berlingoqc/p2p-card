@@ -1,9 +1,18 @@
 use bevy::prelude::*;
+use game::logic::players::OtherPlayer;
+use protocol::generated::client::ConnectionState;
 use rand::rngs::StdRng;
 
-use crate::{network::NetworkState, resource::MyPlayerResource, utils::{get_random_color, get_random_shape}};
+use crate::{resource::MyPlayerResource, utils::{get_random_color, get_random_shape}};
 
 const X_EXTENT: f32 = 900.;
+
+
+#[derive(Component)]
+pub struct Connected;
+
+#[derive(Component)]
+pub struct Disconnected;
 
 #[derive(Component)]
 pub struct MyPlayer;
@@ -13,9 +22,8 @@ pub struct MyPlayer;
 pub struct Player {
     pub name: String,
     pub rng: StdRng,
-    pub network_state: NetworkState,
+    pub network_state: ConnectionState,
 }
-
 
 
 pub fn setup_my_player(
@@ -34,9 +42,10 @@ pub fn setup_my_player(
         Mesh2d(shape),
         MeshMaterial2d(materials.add(color)),
         Text2d::new(my_player.player.name.clone()),
-        Transform::from_xyz(-1_f32 * X_EXTENT / 2.0, 0.0, 0.0),
+        Transform::from_xyz(my_player.player.position[0], my_player.player.position[1], my_player.player.position[2]),
         MyPlayer{},
-        Player{ rng: my_player.rng.clone(), name: my_player.player.name.clone(), network_state: NetworkState::Connected }
+        Player{ rng: my_player.rng.clone(), name: my_player.player.name.clone(), network_state: ConnectionState::Connected },
+        Connected{},
     ));
 }
 
@@ -46,18 +55,19 @@ pub fn add_other_player(
     mut meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
 
-    position: Transform,
-    mut my_player: Player,
+    position: &[f32; 3],
+    mut other_player: Player,
 ) {
-    let shape = get_random_shape(1.0, &mut my_player.rng, &mut meshes);
-    let color = get_random_color(&mut my_player.rng);
+    let shape = get_random_shape(1.0, &mut other_player.rng, &mut meshes);
+    let color = get_random_color(&mut other_player.rng);
 
     commands.spawn((
         Mesh2d(shape),
         MeshMaterial2d(materials.add(color)),
-        Text2d::new(my_player.name.clone()),
-        position,
-        Player{ rng: my_player.rng.clone(), name: my_player.name.clone(), network_state: NetworkState::Connected }
+        Text2d::new(other_player.name.clone()),
+        Transform::from_xyz(position[0], position[1], position[2]),
+        other_player,
+        Connected{},
     ));
 
 }

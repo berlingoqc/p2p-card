@@ -35,3 +35,15 @@ pub fn get_random_color(
 
     Color::hsl(r.gen_range(0.0f32..360.0f32), 0.95, 0.7)
 }
+
+pub fn vec3_to_vec_i32(v: &Vec3) -> Vec<i32> {
+    vec![ v.x as i32, v.y as i32, v.z as i32 ]
+}
+
+pub fn veci32_to_i32(v: &Vec<i32>) -> [f32; 3] {
+    [*v.get(0).unwrap() as f32, *v.get(1).unwrap() as f32, *v.get(2).unwrap() as f32]
+}
+
+pub fn i32_to_veci32(v: &[f32; 3]) -> Vec<i32> {
+    vec![v[0] as i32, v[1] as i32, v[2] as i32]
+}

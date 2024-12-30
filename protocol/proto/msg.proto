@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package msg;
+
+enum ClientHandlers {
+    PRESENTATION = 0;
+}
+
+message Presentation {
+    string name = 1;
+    uint64 hash = 2;
+    optional bytes profile_pub_key = 3;
+    repeated int32 positions = 4;
+    bytes pub_key = 5;
+}

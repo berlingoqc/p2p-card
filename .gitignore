@@ -2,4 +2,4 @@ target/
 vendor/
 public/
 
-protocol/src/
+protocol/src/generated/

@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package client;
 
-message SearchRequest {
-  string query = 1;
-  int32 page_number = 2;
-  int32 results_per_page = 3;
+
+enum ConnectionState {
+  CONNECTED = 0;
+  DISCONNECTED = 1;
 }

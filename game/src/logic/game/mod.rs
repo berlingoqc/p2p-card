@@ -45,8 +45,8 @@ mod tests {
 
     #[test]
     fn load_alice() {
-        let alice_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/alice.json"), profile_public_key: None, name: "alice".into() };
-        let john_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/john.json"), profile_public_key: None, name: "john".into() };
+        let alice_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/alice.json"), position: [0.0; 3], profile_public_key: None, name: "alice".into() };
+        let john_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/john.json"), position: [0.0; 3], profile_public_key: None, name: "john".into() };
 
         let alice = MyPlayer::load(alice_config);
         let john = MyPlayer::load(john_config);

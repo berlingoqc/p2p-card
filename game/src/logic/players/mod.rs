@@ -12,40 +12,40 @@ pub struct MyPlayerConfiguration {
     pub profile_public_key: Option<[u8; 32]>,
     pub wallet_path: String,
     pub name: String,
+    pub position: [f32; 3],
 }
 
 
+#[derive(Clone)]
 pub struct OtherPlayer {
     pub name: String,
 
-    // Hash of my public key
     pub hash: u64,
 
-    // Profile public_key
     pub profile_public_key: PublicKey,
 
-    // Use for encryption
     pub pub_key: PublicKey,
+
+    pub position: [f32; 3],
 }
 
 pub struct MyPlayer {
     pub name: String,
 
-    // Hash of my public key
     pub hash: u64,
 
-    // Profile public key
     pub profile_public_key: PublicKey,
 
-    // Use for encryption
     pub pub_key: PublicKey,
     pub private: StaticSecret,
+
+    pub position: [f32; 3],
 }
 
 
 impl Default for MyPlayerConfiguration {
     fn default() -> Self {
-        MyPlayerConfiguration { wallet_path: String::new(), name: String::new(), profile_public_key: None }
+        MyPlayerConfiguration { wallet_path: String::new(), name: String::new(), profile_public_key: None, position: [0.0; 3] }
     }
 }
 
@@ -64,6 +64,7 @@ impl MyPlayer {
             hash: hash_to_u64(profile_public_key.as_bytes().to_vec()),
             profile_public_key: profile_public_key,
             name: config.name,
+            position: config.position,
         }
     }
 
@@ -73,6 +74,7 @@ impl MyPlayer {
             hash: hash_to_u64(self.profile_public_key.as_bytes().to_vec()),
             profile_public_key: self.profile_public_key.clone(),
             pub_key: self.pub_key.clone(),
+            position: self.position,
         }
     }
 
@@ -91,7 +93,7 @@ mod tests {
 
     #[test]
     fn load_alice() {
-        let alice_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/alice.json"), profile_public_key: None, name: "alice".into() };
+        let alice_config = MyPlayerConfiguration { wallet_path: test_case!("/wallets/alice.json"), position: [0.0; 3], profile_public_key: None, name: "alice".into() };
 
         let _ = MyPlayer::load(alice_config);
     }

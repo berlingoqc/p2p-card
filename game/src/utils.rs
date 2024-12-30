@@ -27,8 +27,26 @@ pub fn splice<T>(v: &mut Vec<T>, start: usize, count: usize) -> Vec<T> {
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+
 pub fn hash_to_u64(data: Vec<u8>) -> u64 {
     let mut hasher = DefaultHasher::new();
     data.hash(&mut hasher);
     hasher.finish()
+}
+
+
+
+use x25519_dalek::PublicKey;
+
+pub fn get_pub_key_from_vec(data: Vec<u8>) -> Result<PublicKey, ()> {
+    if data.len() != 32 {
+        eprintln!("Invalid public key length");
+        return Err(());
+    }
+
+    let key_bytes: [u8; 32] = data
+        .try_into()
+        .expect("Failed to convert Vec<u8> to [u8; 32]");
+
+    Ok(PublicKey::from(key_bytes))
 }
