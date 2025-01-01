@@ -1,3 +1,4 @@
+pub mod chain;
 pub mod deck;
 pub mod players;
 pub mod encryption;

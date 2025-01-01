@@ -1,5 +1,6 @@
 use msg::ClientHandlers;
 
+pub mod chain;
 pub mod client;
 pub mod msg;
 

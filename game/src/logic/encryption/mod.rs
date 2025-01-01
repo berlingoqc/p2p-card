@@ -6,8 +6,6 @@ use x25519_dalek::{StaticSecret, PublicKey, SharedSecret};
 use aes_gcm::KeyInit;
 
 
-
-
 fn encrypt(nonce: &[u8; 12], plaintext: &[u8], key: &SharedSecret) -> Result<Vec<u8>, ()> {
     let key_bytes = key.as_bytes();
     encrypt_byte_key(nonce, plaintext, key_bytes)
@@ -67,6 +65,11 @@ impl SealingKey {
 
     pub fn decrypt(&self, data: &Vec<u8>) -> Result<Vec<u8>, ()> {
         decrypt( &data, &self.shared_secret)
+    }
+
+    pub fn get_pub_key(&self) -> Result<Vec<u8>, ()> {
+        let public = PublicKey::from(self.shared_secret.as_bytes().clone());
+        Ok(public.to_bytes().to_vec())
     }
 }
 

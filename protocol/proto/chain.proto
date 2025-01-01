@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package chain;
+
+message Transaction {
+    string pub_key = 1;
+
+    uint32 action = 2;
+    uint64 timestamp = 3;
+
+    bytes signature = 4;
+}
+
+message Block {
+    string previous_hash = 1;
+    uint64 timestamp = 2;
+
+    repeated Transaction transactions = 3;
+}
+
+message BlockProposal {
+    string block_hash = 1;
+    Block block = 2;
+    string pub_key = 3;
+}
+
+enum ProposalResponseType {
+    ACCEPTED = 0;
+    REFUSED = 1;
+    ABSTAINT = 2;
+}
+
+message BlockProposalResponse {
+    string block_hash = 1;
+    string pub_key = 2;
+    ProposalResponseType response = 3;
+}
+
+message BlockProposalFinalResponse {
+    ProposalResponseType response = 1;
+    string block_hash = 2;
+    string chain_hash = 3;
+    uint32 chain_length = 4;
+}
+
+message Blockchain {
+    repeated Block chain = 1;
+}
