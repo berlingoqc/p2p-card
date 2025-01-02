@@ -3,3 +3,6 @@ vendor/
 public/
 
 protocol/src/generated/
+
+website/hugo/static/angular/*
+website/**/node-modules/
