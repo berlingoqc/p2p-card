@@ -27,7 +27,7 @@ jobs:
       run: (cd website/angular && npm install) && (cd website/hugo && npm install)
 
     - name: Build Hugo Site
-      run: (cd website/hugo && npm run build)
+      run: (cd website/hugo && npm run build && cat ./public/index.html)
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3

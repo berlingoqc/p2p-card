@@ -5,4 +5,4 @@ public/
 protocol/src/generated/
 
 website/hugo/static/angular/*
-website/**/node-modules/
+website/**/node_modules/
