@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use block::calculate_hash_block;
+use block::calculate_hash;
 use chrono::Utc;
 use protocol::generated::chain::{Block, BlockProposal, BlockProposalFinalResponse, BlockProposalResponse, Blockchain, ProposalResponseType, Transaction};
 
@@ -52,6 +52,7 @@ impl BlockChainManager {
         t.pub_key = self.my_pub_key.clone();
         t.action = action;
 
+        t.payload = content.clone();
         t.signature = self.sealing_key.encrypt(&generate_random_nonce(), content).unwrap();
         t.timestamp = self.get_current_timestamp_utc();
 
@@ -62,7 +63,7 @@ impl BlockChainManager {
     pub fn create_block(&mut self, transactions: Vec<Transaction>) -> Result<BlockProposal, ()> {
 
         let mut block = Block::default();
-        block.previous_hash = self.get_last_block().map(|b| calculate_hash_block(&block).unwrap()).or_else(|| Some("0".to_string()))
+        block.previous_hash = self.get_last_block().map(|b| calculate_hash(&block).unwrap()).or_else(|| Some("0".to_string()))
             .unwrap();
 
         block.timestamp = self.get_current_timestamp_utc();
@@ -71,9 +72,9 @@ impl BlockChainManager {
         let mut block_proposal = BlockProposal::default();
         block_proposal.block = Some(block.clone());
         block_proposal.pub_key = self.my_pub_key.clone();
-        block_proposal.block_hash = calculate_hash_block(&block).unwrap();
+        block_proposal.block_hash = calculate_hash(&block).unwrap();
 
-        self.current_proposal.insert(block_proposal.block_hash.clone(), block_proposal.clone());
+        self.current_proposal.insert(block_proposal.pub_key.clone(), block_proposal.clone());
 
         Ok(block_proposal)
     }
@@ -87,7 +88,7 @@ impl BlockChainManager {
     }
 
     pub fn on_block_proposal_response(&mut self, proposal_response: &BlockProposalResponse) -> Result<(), ()> {
-        let mut current_responses = if let Some(v) = self.current_approuval.get_mut(&proposal_response.block_hash) {
+        let current_responses = if let Some(v) = self.current_approuval.get_mut(&proposal_response.block_hash) {
             v
         } else {
             let map = HashMap::new();
@@ -118,11 +119,11 @@ impl BlockChainManager {
 
     pub fn get_final_response_block_proposal(&mut self, block_hash: &String) -> Result<BlockProposalFinalResponse, ()> {
 
-        let proposal = self.current_proposal.get(block_hash).unwrap();
+        let (_, proposal) = self.current_proposal.iter().find(|p| p.1.block_hash.eq(block_hash)).unwrap();
         let responses = self.current_approuval.get(block_hash).unwrap();
         let len = responses.len() as u32;
 
-        if len <= self.number_people {
+        if len < self.number_people {
             eprintln!("not enought response to produce final response");
             return Err(());
         }
@@ -147,7 +148,9 @@ impl BlockChainManager {
             self.current_chain.chain.insert(self.current_chain.chain.len(), block.clone());
         }
 
-        Ok(BlockProposalFinalResponse { response: response as i32, block_hash: proposal.block_hash.clone(), chain_hash: "".to_string(), chain_length: self.current_chain.chain.len() as u32 })
+        Ok(BlockProposalFinalResponse { 
+            response: response as i32, block_hash: proposal.block_hash.clone(), chain_hash: calculate_hash(&self.current_chain).unwrap(), chain_length: self.current_chain.chain.len() as u32
+        })
     }
 
     fn get_last_block(&self) -> Option<&Block> {
@@ -162,6 +165,18 @@ impl BlockChainManager {
         Utc::now().timestamp() as u64
     }
 
+}
+
+
+pub struct HashValidater {}
+
+
+
+impl  HashValidater {
+    
+    fn validate_transaction(transaction: &Transaction) -> Result<(), ()> {
+        Ok(())
+    }
 }
 
 
@@ -210,6 +225,7 @@ mod tests {
         let final_john = john_chain_manager.get_final_response_block_proposal(&alice_block_proposal.block_hash).unwrap();
 
         assert_eq!(final_alice.block_hash, final_john.block_hash);
+        assert_eq!(final_alice.chain_hash, final_john.chain_hash);
         assert_eq!(final_alice.chain_length, final_john.chain_length);
 
     }

@@ -9,6 +9,7 @@ message Transaction {
     uint64 timestamp = 3;
 
     bytes signature = 4;
+    bytes payload = 5;
 }
 
 message Block {
