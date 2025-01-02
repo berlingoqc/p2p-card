@@ -1,18 +1,19 @@
 use encryption::{EncryptedCard, EncryptedCards};
-use num::iter::Range;
 
 pub mod encryption;
 pub mod draw;
 
-pub struct PartialDeck {
-    pub cards: Vec<Vec<u8>>
+// Use to received partial encrypted deck from multiple player
+// when are parts are here we can do the final shuffle
+// and produce the final deck
+pub struct DeckBuilder {
+
 }
 
 #[derive(Default)]
 pub struct Deck {
-    pub cards: Vec<Vec<u8>>,
+    pub cards: EncryptedCards,
 }
-
 
 impl Deck {
 
@@ -20,6 +21,9 @@ impl Deck {
         Self { cards: (1..=10).map(|i| (i as u32).to_le_bytes().to_vec()).collect() }
     }
 
+    pub fn create(cards: EncryptedCards) -> Self {
+        Self { cards: cards }
+    }
 
     pub fn add_encrypted_card_from_player(&mut self, cards: &mut EncryptedCards) {
         self.cards.append(cards);
@@ -42,13 +46,7 @@ impl Deck {
 
 #[cfg(test)]
 mod tests {
-    use crate::logic::{deck::{encryption::get_encrypted_card_nonce}, encryption::private::{PrivatePlayerGameState, ShareRequest}, players::{MyPlayer, MyPlayerConfiguration}};
-
     use super::*;
-
-    macro_rules! test_case {($fname:expr) => (
-        concat!(env!("CARGO_MANIFEST_DIR"), "/../tests/", $fname).to_string()
-      )}
 
     #[test]
     fn draw_card() {

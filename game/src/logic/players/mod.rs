@@ -1,6 +1,7 @@
 pub mod key_loader;
 
 use key_loader::get_key_loader;
+use protocol::generated::card::{Player, Vec3};
 use x25519_dalek::{PublicKey, StaticSecret};
 
 use crate::utils::hash_to_u64;
@@ -75,6 +76,16 @@ impl MyPlayer {
             profile_public_key: self.profile_public_key.clone(),
             pub_key: self.pub_key.clone(),
             position: self.position,
+        }
+    }
+
+    pub fn to_protoc_player(&self) -> Player {
+        Player {
+            name: self.name.clone(),
+            hash: self.hash,
+            profile_pub_key: self.profile_public_key.to_bytes().to_vec(),
+            pub_key: self.profile_public_key.to_bytes().to_vec(),
+            position: Some(Vec3{x: self.position[0] as u32, y: self.position[1] as u32, z: self.position[2] as u32}),
         }
     }
 

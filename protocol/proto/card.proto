@@ -1,0 +1,146 @@
+syntax = "proto3";
+
+package card;
+
+// All the different game action in the card game that are registered in the
+// blockchain
+enum CardGameActions {
+
+    // Step where the game configuration is decided amongst players , STEP 0
+    GAME_CONFIGURATION = 0;
+
+    // Step where the players encrypt the deck amongst them , STEP 1
+    DECK_ENCRYPTION = 1;
+
+
+    // Each next action can occurs at anytime afterthat
+
+
+
+    // Player draw a card from the deck
+    DRAW_CARD = 2;
+    
+    // Player put a card on the table , could be on the playing area or the ....
+    PLAY_CARD = 3;
+
+    // Player reveal the card content , can be in is hand or on the table
+    DECRYPT_CARD = 4;
+}
+
+// Use conversion from f32 to uint32 to not have issue accross architecture
+message Vec3 {
+    uint32 x = 1;
+    uint32 y = 2;
+    uint32 z = 3;
+}
+
+// Each player shared public configuration
+message Player {
+    // username
+    string name = 1;
+    // hash of the public_key use for indentification
+    uint64 hash = 2;
+    // public pub key for profile matching
+    bytes profile_pub_key = 3;
+    // public key use for encryption for this game
+    bytes pub_key = 4;
+
+    // Position on the board
+    Vec3 position = 5;
+}
+
+// Describe one define area on the playing table where playing should
+// their card
+message PlayingArea {
+    // name of the playing area , must be unique amongst them in the table
+    // the one name "deck" will contain the deck if not center of the playing table
+    string name = 1;
+    // description as you want
+    string description = 2;
+    // size of the area
+    Vec3 size = 3;
+    // position of the ares
+    Vec3 position = 4;
+}
+
+// Describe the whole playing table (field)
+// you defined multiple area where people should throw their cards at
+message PlayingField {
+    repeated PlayingArea areas = 1;
+}
+
+// Contain a ensemble of cards , can represent the deck , the player hand , a set of card
+// on the playing field
+message Cards {
+    repeated bytes cards = 1;
+}
+
+// Configuration for the agreement type to take decision of the action
+// that will occurs
+message AgreementDefinition {
+    // Threashold for the number of yes vote required for something
+    // to be accepted in the blockchain and for a card to be decrypted
+    uint32 threashold = 6;
+}
+
+
+// Configuration of what each player need to encrypt from the deck
+message PlayerEncryption {
+    // name of the player
+    uint64 player_name = 1;
+    // list of index from the agreed starting deck that need YOUR ENCRYPTION
+    repeated uint32 indexes = 2;
+}
+
+// Configuration on how the deck will be encrypted
+message DeckEncyption {
+    // order of each player share to be put in this order    
+    repeated uint64 reconstruction_order = 1;
+    // reshuffling seed used after reconstruction to reshuffle
+    optional uint64 resuffling_seed = 2;
+    // what share of the deck each player will encryt
+    repeated PlayerEncryption player_encryption = 3;
+}
+
+// Game configuration 
+message GameConfiguration {
+    // max number of player for this game
+    optional uint32 max_number_players = 1;
+    // min number of player for this game
+    optional uint32 min_number_players = 2;
+    // game name , like uno , blackjack , ...
+    optional string game_name = 3;
+    // optionally a sub game type for a familiar set of rules
+    optional string game_type_name = 4;
+
+    // definition of the table playing area
+    optional PlayingField playing_field = 5;
+
+    // definition of the agreement type
+    optional AgreementDefinition agreement_definition = 6;
+    // definition of the deck encryption
+    optional DeckEncyption deck_encryption = 7;
+    // starting deck
+    repeated bytes starting_deck = 8;
+
+    // list of players arround the table
+    repeated Player players = 9;
+}
+
+// Set of card 
+message EncryptedDeck {
+    repeated bytes cards = 1;
+}
+
+// Share of the symmetric key for a given card
+message EncryptedShare {
+    // use the nonce to indentify the card
+    bytes nonce = 1;
+    // secret that you need to parse with your private key
+    // contain your share of the symmetric key
+    bytes secret = 2;
+}
+
+message EncryptedSharesResponse {
+    repeated EncryptedShare encrypted_shares = 1;
+}

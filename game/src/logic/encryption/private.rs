@@ -14,11 +14,11 @@ use super::{decrypt_with_key, SealingKey};
 pub struct PrivatePlayerGameState {
     // My parts for each of the card , the id is the noune
     pub parts: HashMap<[u8; 12], Vec<String>>,
-    pub sealing_keys: HashMap<String, SealingKey>,
+    pub sealing_keys: HashMap<u64, SealingKey>,
 }
 
 pub struct ShareRequest {
-    pub player: String,
+    pub player: u64,
     pub cards_nonce: Vec<[u8; 12]>,
 }
 
@@ -33,7 +33,7 @@ impl PrivatePlayerGameState {
 
         let mut sealing_keys = HashMap::new();
         for player in other_players.iter() {
-            sealing_keys.insert(player.name.clone(), SealingKey::create(&my_player.private, player.pub_key.clone()));
+            sealing_keys.insert(player.hash, SealingKey::create(&my_player.private, player.pub_key.clone()));
         }
 
         Self {
@@ -45,16 +45,16 @@ impl PrivatePlayerGameState {
 
     // When game is starting this will generate the part of the deck from this player
     pub fn generate_starting_data(&mut self, starting_deck: &Vec<Vec<u8>>, indexes: &Vec<u32>, threshold: u8) -> Result<(
-        HashMap<String, SharedPrivateCardShares>,
+        HashMap<u64, SharedPrivateCardShares>,
         EncryptedCards,
     ), ()> {
         let mut private_encrypted_cards = encrypt_cards_from_deck(starting_deck, indexes, (self.sealing_keys.len() + 1) as u8, threshold)?;
 
-        let mut players_shares: HashMap<String, SharedPrivateCardShares> = HashMap::with_capacity(self.sealing_keys.len());
+        let mut players_shares: HashMap<u64, SharedPrivateCardShares> = HashMap::with_capacity(self.sealing_keys.len());
 
-        for player_name in self.sealing_keys.keys() {
-            let sealing_key = self.sealing_keys.get(player_name).unwrap();
-            players_shares.insert(player_name.clone(), encrypt_shares_for_player(&mut private_encrypted_cards, sealing_key)?);
+        for player_id in self.sealing_keys.keys() {
+            let sealing_key = self.sealing_keys.get(player_id).unwrap();
+            players_shares.insert(*player_id, encrypt_shares_for_player(&mut private_encrypted_cards, sealing_key)?);
         }
 
         self.parts = to_own_shared(&private_encrypted_cards);
@@ -67,11 +67,11 @@ impl PrivatePlayerGameState {
     }
 
     // Add the data receive by the other player , your share for the card the generated
-    pub fn add_other_player_starting_data(&mut self, other_player: &String, shared: &SharedPrivateCardShares) -> Result<(), ()> {
+    pub fn add_other_player_starting_data(&mut self, other_player: u64, shared: &SharedPrivateCardShares) -> Result<(), ()> {
 
         for (nonce, cipher) in shared.iter() {
 
-            let sealing_key = self.sealing_keys.get(other_player).unwrap();
+            let sealing_key = self.sealing_keys.get(&other_player).unwrap();
 
 
             let my_share = String::from_utf8(sealing_key.decrypt(cipher)?).unwrap();
@@ -101,8 +101,8 @@ impl PrivatePlayerGameState {
         Ok(ShareResponse { cards_nonce: items })
     }
 
-    pub fn add_other_player_shares(&mut self, other_player: &String, share_response: &ShareResponse) -> Result<(), ()> {
-        let sealing_key = self.sealing_keys.get(other_player).unwrap();
+    pub fn add_other_player_shares(&mut self, other_player: u64, share_response: &ShareResponse) -> Result<(), ()> {
+        let sealing_key = self.sealing_keys.get(&other_player).unwrap();
 
         for (nonce, encrypted_share) in share_response.cards_nonce.iter() {
             let parts = self.parts.get_mut(nonce).unwrap();

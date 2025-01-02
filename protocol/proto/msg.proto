@@ -3,8 +3,22 @@ syntax = "proto3";
 package msg;
 
 enum ClientHandlers {
+    // Presentation
     PRESENTATION = 0;
+
+    // A Blockcain
+    CHAIN = 1;
+
+    // Block proposal
+    BLOCK_PROPOSAL = 2;
+
+    // Block proposal response
+    BLOCK_PROPOSAL_RESPONSE = 3;
+
+    // Block proposal final response
+    BLOCK_PROPOSAL_FINAL_RESPONSE = 4;
 }
+
 
 message Presentation {
     string name = 1;

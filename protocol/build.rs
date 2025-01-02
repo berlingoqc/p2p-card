@@ -5,6 +5,7 @@ fn main() {
         "proto/chain.proto",
         "proto/client.proto",
         "proto/msg.proto",
+        "proto/card.proto",
     ];
     let proto_include_dirs = &["proto/"];
 

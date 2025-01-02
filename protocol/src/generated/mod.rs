@@ -3,6 +3,7 @@ use msg::ClientHandlers;
 pub mod chain;
 pub mod client;
 pub mod msg;
+pub mod card;
 
 
 impl From<u32> for ClientHandlers {

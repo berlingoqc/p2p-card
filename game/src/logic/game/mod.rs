@@ -1,40 +1,14 @@
 use super::deck::Deck;
 use super::players::OtherPlayer;
 
-pub struct PreGameConfiguration {
-    pub max_number_players: u8,
-    pub min_number_players: u8,
-
-    pub game_name: String,
-    pub game_type_name: String,
-
-    pub starting_deck: Deck,
-
-}
-
-pub struct GameConfiguration {
-    pub player_order: Vec<String>,
-    pub threashold: u8,
-}
-
-
-
-pub struct AgreedSharedGameState {
-    pub pregame_configuration: PreGameConfiguration,
-    pub game_configuration: GameConfiguration,
-    pub players: Vec<OtherPlayer>,
-}
-
-pub struct SharedGameState {
-    pub turn: String,
-    pub deck: Deck,
-}
-
-
-
+use protocol::generated::card::GameConfiguration;
 
 #[cfg(test)]
 mod tests {
+    use std::default;
+
+    use protocol::generated::card::{AgreementDefinition, DeckEncyption, PlayerEncryption, PlayingArea, PlayingField, Vec3};
+
     use crate::logic::{deck::{encryption::get_encrypted_card_nonce}, encryption::private::{PrivatePlayerGameState, ShareRequest}, players::{MyPlayer, MyPlayerConfiguration}};
 
     use super::*;
@@ -51,58 +25,53 @@ mod tests {
         let alice = MyPlayer::load(alice_config);
         let john = MyPlayer::load(john_config);
 
-        let pre_game_configuraton = PreGameConfiguration {
-            game_name: "4color".into(),
-            game_type_name: "regular".into(),
-            max_number_players: 4,
-            min_number_players: 2,
-            starting_deck: Deck::create_default_deck(),
-        };
+        let alice_indexes: Vec<u32> = vec![0, 1, 2, 3, 4];
+        let john_indexes: Vec<u32> = vec![5, 6, 7, 8, 9 ];
 
         let game_configuration = GameConfiguration {
-            player_order: vec![alice.name.clone(), john.name.clone()],
-            threashold: 2,
+            game_name: Some("4color".into()),
+            game_type_name: Some("regular".into()),
+            max_number_players: Some(4),
+            min_number_players: Some(2),
+            starting_deck: Deck::create_default_deck().cards,
+            agreement_definition: Some(AgreementDefinition{ threashold: 2 }),
+            deck_encryption: Some(DeckEncyption{
+                resuffling_seed: Some(2151314124),
+                reconstruction_order: vec![
+                    alice.hash, john.hash,
+                ],
+                player_encryption: vec![
+                    PlayerEncryption { player_name: alice.hash, indexes: alice_indexes },
+                    PlayerEncryption { player_name: john.hash, indexes: john_indexes }
+                ]
+            }),
+            playing_field: None,
+            players: vec![
+                alice.to_protoc_player(),
+                john.to_protoc_player(),
+            ],
+            ..Default::default()
         };
 
         let alice_other_player = alice.to_other_player();
         let john_other_player = john.to_other_player();
-
-
-
-        let agreed_shared_game_state = AgreedSharedGameState {
-            game_configuration: game_configuration,
-            pregame_configuration: pre_game_configuraton,
-            players: vec![alice.to_other_player(), john.to_other_player()],
-        };
-
-
-        let mut shared_game_state = SharedGameState {
-            turn: alice.name.clone(),
-            deck: Deck::default()
-        };
-
+        
         let mut alice_game_state = PrivatePlayerGameState::new(&alice, &vec![john_other_player]);
         let mut john_game_state = PrivatePlayerGameState::new(&john, &vec![alice_other_player]);
 
-        let alice_indexes: Vec<u32> = vec![0, 1, 2, 3, 4];
-        let john_indexes: Vec<u32> = vec![5, 6, 7, 8, 9 ];
-
-        let starting_deck = agreed_shared_game_state.pregame_configuration.starting_deck.cards.clone();
+        let starting_deck = game_configuration.starting_deck.clone();
 
         let alice_starting_data = alice_game_state.generate_starting_data(
             &starting_deck, 
             &alice_indexes,
-            agreed_shared_game_state.game_configuration.threashold,
+            game_configuration.agreement_definition.unwrap().threashold as u8,
         ).unwrap();
 
         let john_starting_data = john_game_state.generate_starting_data(
             &starting_deck, 
             &john_indexes,
-            agreed_shared_game_state.game_configuration.threashold,
+            game_configuration.agreement_definition.unwrap().threashold as u8,
         ).unwrap();
-
-        shared_game_state.deck.add_encrypted_card_from_player(&mut alice_starting_data.1.clone());
-        shared_game_state.deck.add_encrypted_card_from_player(&mut john_starting_data.1.clone());
 
 
         alice_game_state.add_other_player_starting_data(&john.name, john_starting_data.0.get(&alice.name).unwrap()).unwrap();
