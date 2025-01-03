@@ -57,7 +57,7 @@ jobs:
         components: clippy, rustfmt
 
     - name: Install cargo-make
-      run: cargo install cargo-make
+      run: cargo install cargo-make && cargo install -f wasm-bindgen-cli --version 0.2.97
 
     - name: Install protoc
       run: sudo apt-get install protobuf-compiler
