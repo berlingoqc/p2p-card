@@ -77,7 +77,7 @@
 
 [[main]]
   name = "Play !"
-  url = "/angular/index.html"
+  url = "/p2p-card/angular/index.html"
   weight = 40
 
 # [[footer]]
