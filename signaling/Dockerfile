@@ -10,7 +10,6 @@ RUN cargo fetch
 RUN cargo build --release
 
 FROM alpine:latest
-RUN apk add --no-cache libssl-dev
 
 COPY --from=builder /usr/src/app/target/release/signaling /usr/local/bin/signaling
 
