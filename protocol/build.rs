@@ -11,6 +11,7 @@ fn main() {
 
     prost_build::Config::new()
         .out_dir("src/generated")
+        .protoc_arg("--experimental_allow_proto3_optional")
         .compile_protos(proto_files, proto_include_dirs)
         .expect("Failed to compile Protobuf files");
 }

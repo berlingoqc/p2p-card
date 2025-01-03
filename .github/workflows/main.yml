@@ -1,4 +1,4 @@
-name: Deploy Hugo Site to GitHub Pages
+name: Deploy Signaling app to Github registery
 
 on:
   push:
@@ -6,7 +6,34 @@ on:
       - main
 
 jobs:
-  build-deploy:
+  build-deploy-signaling:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: clippy, rustfmt
+    
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.PAT }}
+
+    - name: Build docker
+      run: cd signaling && docker build -t ghcr.io/berlingoqc/p2p-card/p2p-card-signaling:latest .
+
+    - name: Publish docker
+      run: docker push ghcr.io/berlingoqc/p2p-card/p2p-card-signaling:latest
+
+
+  build-deploy-website:
     runs-on: ubuntu-latest
 
     steps:

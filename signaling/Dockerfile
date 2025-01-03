@@ -1,13 +1,11 @@
-FROM rust:1.73 as builder
+FROM rust:1.75 as builder
 
 WORKDIR /usr/src/app
 
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
+COPY src ./src
 
 RUN cargo fetch
-RUN cargo build --release || true
-
-COPY src ./src
 
 RUN cargo build --release
 
