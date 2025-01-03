@@ -13,7 +13,7 @@ seo:
 ---
 
 
-<iframe src="{{ .Site.BaseURL }}/angular/index.html" width="100%" height="600px" style="border:none;"></iframe>
+<iframe src="/p2p-card/angular/index.html" width="100%" height="600px" style="border:none;"></iframe>
 
 
 <script>

@@ -23,6 +23,15 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: clippy, rustfmt
+
+    - name: Install cargo-make
+      run: cargo install cargo-make
+
     - name: Npm install
       run: (cd website/angular && npm install) && (cd website/hugo && npm install)
 

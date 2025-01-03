@@ -26,11 +26,10 @@ struct Args {
     room: String,
 }
 
-
 fn parse_position_from_string(position: &String) -> [f32; 3] {
     if position.contains(",") {
         let items = position.split(",");
-        let mut v  = [0.0; 3];
+        let mut v = [0.0; 3];
         for (i, item) in items.enumerate() {
             if i >= 3 {
                 continue;
@@ -40,7 +39,6 @@ fn parse_position_from_string(position: &String) -> [f32; 3] {
         }
 
         v
-        
     } else {
         [0.0; 3]
     }
@@ -50,11 +48,9 @@ fn parse_position_from_string(position: &String) -> [f32; 3] {
 pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, SelectedRoom), ()> {
     use bevy::log::info;
 
-
     let args = Args::parse();
 
     let position = parse_position_from_string(&args.position);
-
 
     println!("my position {:?}", position);
 
@@ -68,9 +64,7 @@ pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, S
         SelectedMatchboxServer {
             url: args.matchbox_server,
         },
-        SelectedRoom {
-            name: args.room,
-        }
+        SelectedRoom { name: args.room },
     ))
 }
 
@@ -81,14 +75,15 @@ pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, S
     // Access the global `window` object
     let window = web_sys::window().unwrap();
     let document = window.document().unwrap();
-    
+
     // Get the DOM element by ID
-    let element = document.get_element_by_id("bevy-canvas")
+    let element = document
+        .get_element_by_id("bevy-canvas")
         .expect("Element not found");
-    
+
     // Cast it to `HtmlElement` to access custom properties
     let html_element = element.dyn_into::<web_sys::HtmlElement>().unwrap();
-    
+
     // Access custom property
     let username = html_element
         .get_attribute("username")
@@ -106,20 +101,20 @@ pub fn load_config() -> Result<(MyPlayerConfiguration, SelectedMatchboxServer, S
         .get_attribute("position")
         .unwrap_or_else(|| "100,100".to_string());
 
+    let position = parse_position_from_string(&position_room);
 
-    let position = parse_position_from_string(&args.position);
-
-    Ok((MyPlayerConfiguration {
-        name: username,
-        profile_public_key: None,
-        wallet_path: "".to_string(),
-        position: position,
+    Ok((
+        MyPlayerConfiguration {
+            name: username,
+            profile_public_key: None,
+            wallet_path: "".to_string(),
+            position: position,
         },
         SelectedMatchboxServer {
             url: selected_matchbox_server,
         },
         SelectedRoom {
             name: selected_room,
-        }
+        },
     ))
 }

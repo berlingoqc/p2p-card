@@ -1,5 +1,3 @@
-
-
 pub fn vec_u32_to_u8(data: &[u32]) -> Vec<u8> {
     let capacity = data.len();
     let mut output = Vec::with_capacity(capacity);
@@ -16,25 +14,19 @@ pub fn splice<T>(v: &mut Vec<T>, start: usize, count: usize) -> Vec<T> {
     }
 
     let end = std::cmp::min(start + count, v.len()); // Clamp end index to vector length
-    let removed = v.drain(start..end).collect(); 
+    let removed = v.drain(start..end).collect();
 
     removed
 }
 
-
-
-
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-
 
 pub fn hash_to_u64(data: Vec<u8>) -> u64 {
     let mut hasher = DefaultHasher::new();
     data.hash(&mut hasher);
     hasher.finish()
 }
-
-
 
 use x25519_dalek::PublicKey;
 

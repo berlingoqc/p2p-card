@@ -1,6 +1,6 @@
 pub mod logic;
-pub mod utils;
 pub mod random;
+pub mod utils;
 
 /*
 
@@ -48,7 +48,7 @@ struct Card {
 fn main() {
 
     let mut rng = rand::rngs::OsRng;
-    
+
     let mut deck: Vec<Vec<u8>> = vec![b"cart -1".to_vec(), b"cart 0".to_vec(), b"cart 1".to_vec()];
 
     let encrypted_deck: Vec<(Vec<u8>, [u8; 32])> = deck.iter().map(|card| {

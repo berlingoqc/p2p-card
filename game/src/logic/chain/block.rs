@@ -1,9 +1,8 @@
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
 
 use base64::Engine;
 
 pub fn calculate_hash<T: prost::Message>(block: &T) -> Result<String, ()> {
-
     let block_payload = block.encode_to_vec();
 
     let mut hasher = Sha256::new();

@@ -1,14 +1,22 @@
-use game::{logic::players::{MyPlayer, OtherPlayer}, utils::get_pub_key_from_vec};
+use game::{
+    logic::players::{MyPlayer, OtherPlayer},
+    utils::get_pub_key_from_vec,
+};
 use protocol::generated::msg::Presentation;
 
-use crate::{resource::MyPlayerResource, utils::{i32_to_veci32, veci32_to_i32}};
-
-
+use crate::{
+    resource::MyPlayerResource,
+    utils::{i32_to_veci32, veci32_to_i32},
+};
 
 pub fn presentation_to_other_player(presentation: &Presentation) -> OtherPlayer {
-
     let pub_key = get_pub_key_from_vec(presentation.pub_key.clone()).unwrap();
-    let profile_public_key = presentation.profile_pub_key.clone().map(|d| get_pub_key_from_vec(d).unwrap()).or_else(|| Some(pub_key.clone())).unwrap();
+    let profile_public_key = presentation
+        .profile_pub_key
+        .clone()
+        .map(|d| get_pub_key_from_vec(d).unwrap())
+        .or_else(|| Some(pub_key.clone()))
+        .unwrap();
 
     OtherPlayer {
         hash: presentation.hash,
@@ -17,7 +25,6 @@ pub fn presentation_to_other_player(presentation: &Presentation) -> OtherPlayer 
         pub_key: pub_key,
         position: veci32_to_i32(&presentation.positions),
     }
-    
 }
 
 pub fn my_player_to_presentation(my_player: &MyPlayerResource) -> Presentation {

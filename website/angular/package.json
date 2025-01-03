@@ -4,6 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "prebuild": "cd ../../bev_app && cargo make build-web && cp ./public/wasm* ../website/angular/public/",
     "build": "ng build && mkdir -p ../hugo/static/angular/ && cp -r ./dist/angular/browser/* ../hugo/static/angular/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
