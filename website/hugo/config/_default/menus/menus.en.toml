@@ -77,7 +77,7 @@
 
 [[main]]
   name = "Play !"
-  url = "/play"
+  url = "/angular/index.html"
   weight = 40
 
 # [[footer]]
