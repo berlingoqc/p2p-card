@@ -33,7 +33,7 @@ jobs:
       run: cargo install cargo-make
 
     - name: Install protoc
-      run: apt-get install protobuf-compiler
+      run: sudo apt-get install protobuf-compiler
 
     - name: Npm install
       run: (cd website/angular && npm install) && (cd website/hugo && npm install)
