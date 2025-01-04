@@ -1,5 +1,4 @@
-FROM rust:1.75 as builder
-
+FROM rust:1.78.0-buster as builder
 
 WORKDIR /usr/src/app
 
@@ -10,9 +9,10 @@ RUN cargo fetch
 
 RUN cargo build --release
 
-FROM alpine:latest
+FROM debian:bullseye-slim
 LABEL org.opencontainers.image.source https://github.com/berlingoqc/p2p-card
 
-COPY --from=builder /usr/src/app/target/release/signaling /usr/local/bin/signaling
+RUN apt install libc6
+COPY --from=builder /usr/src/app/target/release/signaling /usr/local/bin/
 
 ENTRYPOINT ["/usr/local/bin/signaling"]
